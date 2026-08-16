@@ -29,8 +29,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                     .orElseThrow(() -> new UsernameNotFoundException("User not found with ID: " + id));
         } catch (NumberFormatException e) {
             // Otherwise load by Email or Username (used by Login AuthenticationManager)
-            user = userRepository.findByEmail(usernameOrEmail)
-                    .or(() -> userRepository.findByUsername(usernameOrEmail))
+            user = userRepository.findByEmailIgnoreCase(usernameOrEmail)
+                    .or(() -> userRepository.findByUsernameIgnoreCase(usernameOrEmail))
                     .orElseThrow(() -> new UsernameNotFoundException("User not found with email or username: " + usernameOrEmail));
         }
 

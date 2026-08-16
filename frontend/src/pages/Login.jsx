@@ -118,17 +118,13 @@ const Login = () => {
               <span className="checkbox-label">Remember me</span>
             </label>
             
-            <a 
-              href="#forgot" 
+            <Link 
+              to="/forgot-password" 
               className="auth-link" 
               style={{ fontSize: '0.8rem', fontWeight: '500' }}
-              onClick={(e) => {
-                e.preventDefault();
-                alert('Forgot password module is coming soon in the vault settings.');
-              }}
             >
               Forgot Password?
-            </a>
+            </Link>
           </div>
 
           <button

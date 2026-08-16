@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SecureVault Project Workflow</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #5b6472;
+      --line: #d7dde6;
+      --accent: #1d4ed8;
+      --accent-soft: #e8efff;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.5;
+    }
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 40px 28px 56px;
+    }
+    h1, h2, h3 { line-height: 1.2; margin: 0 0 12px; }
+    h1 { font-size: 30px; }
+    h2 { font-size: 20px; margin-top: 26px; }
+    h3 { font-size: 16px; margin-top: 16px; }
+    p, li { font-size: 14px; color: var(--text); }
+    .subtitle { color: var(--muted); margin-bottom: 20px; }
+    .box {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin: 16px 0;
+    }
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    code {
+      background: #eef2f7;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    ul { margin: 8px 0 0 18px; }
+    .small { font-size: 13px; color: var(--muted); }
+    .flow {
+      counter-reset: step;
+      padding-left: 0;
+      list-style: none;
+    }
+    .flow li {
+      position: relative;
+      padding-left: 34px;
+      margin: 10px 0;
+    }
+    .flow li::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 2px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      text-align: center;
+      line-height: 22px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+    .table th, .table td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .table th { background: #f1f5f9; }
+    @media print {
+      body { background: #fff; }
+      .page { padding: 0; max-width: none; }
+      .box { break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="tag">SecureVault Project Workflow</div>
+    <h1>SecureVault</h1>
+    <p class="subtitle">A Spring Boot + React password vault with JWT authentication, encrypted credential storage, email verification, password reset, and sharing between registered users.</p>
+
+    <div class="box">
+      <h2>1. Project Purpose</h2>
+      <p>SecureVault is a credential manager. A user registers, verifies email, logs in, stores passwords, updates them later, and shares selected entries with another registered user. Passwords are stored encrypted in PostgreSQL and decrypted only when returned through authorized API calls.</p>
+    </div>
+
+    <div class="box">
+      <h2>2. Tech Stack</h2>
+      <div class="grid">
+        <div>
+          <h3>Backend</h3>
+          <ul>
+            <li>Spring Boot 4.1</li>
+            <li>Spring Web MVC</li>
+            <li>Spring Security</li>
+            <li>Spring Data JPA</li>
+            <li>PostgreSQL</li>
+            <li>JJWT for JWT tokens</li>
+            <li>Java Mail Sender</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Frontend</h3>
+          <ul>
+            <li>React</li>
+            <li>Axios</li>
+            <li>React Router</li>
+            <li>Dashboard-based credential UI</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="box">
+      <h2>3. High-Level Architecture</h2>
+      <ul>
+        <li><code>frontend</code> sends REST requests to <code>backend</code>.</li>
+        <li><code>AuthController</code> handles registration, login, email verification, refresh token, logout, and password reset.</li>
+        <li><code>PasswordVaultController</code> handles vault CRUD and sharing.</li>
+        <li><code>JwtAuthenticationFilter</code> reads the access token and sets the authenticated user in the security context.</li>
+        <li><code>AuthServiceImpl</code> manages account lifecycle and tokens.</li>
+        <li><code>PasswordVaultServiceImpl</code> manages encrypted passwords and sharing logic.</li>
+        <li>PostgreSQL stores users, password entries, refresh tokens, reset tokens, and share records.</li>
+      </ul>
+    </div>
+
+    <div class="box">
+      <h2>4. Main User Flows</h2>
+      <ol class="flow">
+        <li><strong>Register</strong>: user submits name, email, username, and password. Backend validates the password, checks uniqueness, saves the user with status <code>PENDING</code>, and sends a verification email.</li>
+        <li><strong>Verify Email</strong>: user clicks the email link. Backend marks the account <code>ACTIVE</code> and <code>emailVerified=true</code>.</li>
+        <li><strong>Login</strong>: user enters email or username plus password. Backend authenticates credentials and returns access token + refresh token.</li>
+        <li><strong>Load Dashboard</strong>: frontend calls <code>/api/auth/me</code>, <code>/api/vault</code>, and <code>/api/vault/shared</code>. It loads own entries and shared entries.</li>
+        <li><strong>Create Password</strong>: user saves a credential. Backend encrypts the password and stores it in <code>password_entries</code>.</li>
+        <li><strong>Edit Password</strong>: user updates an entry. Backend re-encrypts the password and saves the new row state.</li>
+        <li><strong>Share Password</strong>: user selects an entry and a recipient email. Backend creates a row in <code>shared_password_entries</code> linking owner, recipient, permission, and share state.</li>
+        <li><strong>View Shared Password</strong>: recipient opens the Shared Vault tab. Backend returns shared entries and the decrypted password so the recipient can view or copy it.</li>
+        <li><strong>Logout</strong>: frontend clears the access token and backend removes refresh token state.</li>
+      </ol>
+    </div>
+
+    <div class="box">
+      <h2>5. Authentication Workflow</h2>
+      <table class="table">
+        <tr><th>Step</th><th>What happens</th></tr>
+        <tr><td>Register</td><td><code>POST /api/auth/register</code> creates the user and sends verification email.</td></tr>
+        <tr><td>Verify email</td><td><code>GET /api/auth/verify</code> activates the account.</td></tr>
+        <tr><td>Login</td><td><code>POST /api/auth/login</code> returns access token + refresh token.</td></tr>
+        <tr><td>Refresh token</td><td><code>POST /api/auth/refresh-token</code> issues a new access token if the refresh cookie is valid.</td></tr>
+        <tr><td>Logout</td><td><code>POST /api/auth/logout</code> deletes the refresh token.</td></tr>
+      </table>
+    </div>
+
+    <div class="box">
+      <h2>6. Password Vault Workflow</h2>
+      <table class="table">
+        <tr><th>Endpoint</th><th>Role</th></tr>
+        <tr><td><code>GET /api/vault</code></td><td>Loads the current user’s saved credentials.</td></tr>
+        <tr><td><code>POST /api/vault</code></td><td>Creates a new encrypted password entry.</td></tr>
+        <tr><td><code>PUT /api/vault/{id}</code></td><td>Updates an existing entry.</td></tr>
+        <tr><td><code>DELETE /api/vault/{id}</code></td><td>Deletes an entry owned by the user.</td></tr>
+        <tr><td><code>GET /api/vault/shared</code></td><td>Loads credentials shared with the current user.</td></tr>
+      </table>
+      <p class="small">Passwords are encrypted before saving and decrypted only when the authorized user requests the data.</p>
+    </div>
+
+    <div class="box">
+      <h2>7. Sharing Workflow</h2>
+      <ol class="flow">
+        <li>User selects one of their own saved credentials.</li>
+        <li>User enters recipient email and permission level.</li>
+        <li>Backend normalizes the email and finds the recipient user case-insensitively.</li>
+        <li>Backend saves a share record in <code>shared_password_entries</code>.</li>
+        <li>Recipient logs in and opens the Shared Vault tab.</li>
+        <li>Backend finds rows for the recipient by user id or email, decrypts the password, and sends it to the UI.</li>
+        <li>UI shows the password with Show/Hide and Copy actions.</li>
+      </ol>
+    </div>
+
+    <div class="box">
+      <h2>8. Password Reset Workflow</h2>
+      <ol class="flow">
+        <li>User enters registered email in the forgot-password flow.</li>
+        <li>Backend generates an OTP and sends it by email.</li>
+        <li>User enters the OTP to verify ownership.</li>
+        <li>User submits a new password.</li>
+        <li>Backend validates strength, hashes the password, updates the user, and consumes the reset token.</li>
+      </ol>
+    </div>
+
+    <div class="box">
+      <h2>9. Database Model</h2>
+      <ul>
+        <li><code>users</code>: account data and verification state.</li>
+        <li><code>password_entries</code>: encrypted user credentials.</li>
+        <li><code>shared_password_entries</code>: share mapping between owner and recipient.</li>
+        <li><code>refresh_tokens</code>: session persistence for login refresh.</li>
+        <li><code>verification_tokens</code>: email verification tokens.</li>
+        <li><code>password_reset_tokens</code>: OTP records for password reset.</li>
+      </ul>
+    </div>
+
+    <div class="box">
+      <h2>10. Important Code Paths</h2>
+      <ul>
+        <li><code>AuthServiceImpl</code>: registration, login, refresh token, logout, password reset.</li>
+        <li><code>PasswordVaultServiceImpl</code>: create, update, delete, share, decrypt, and load entries.</li>
+        <li><code>UserDetailsServiceImpl</code>: loads users for security and login.</li>
+        <li><code>JwtAuthenticationFilter</code>: reads JWT and authenticates requests.</li>
+        <li><code>Dashboard.jsx</code>: loads vault data and renders show/copy/share actions.</li>
+      </ul>
+    </div>
+
+    <div class="box">
+      <h2>11. Interview Summary</h2>
+      <p>When explaining the project, describe it as a secure credential manager with authenticated API access, encrypted password storage, email-based account verification, refresh-token login, controlled sharing, and password reset support. The key engineering points are authorization, encryption, and consistent state between frontend and backend.</p>
+    </div>
+  </div>
+</body>
+</html>

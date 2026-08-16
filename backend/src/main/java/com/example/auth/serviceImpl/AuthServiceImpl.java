@@ -2,10 +2,12 @@ package com.example.auth.serviceImpl;
 
 import com.example.auth.dto.*;
 import com.example.auth.entity.RefreshToken;
+import com.example.auth.entity.PasswordResetToken;
 import com.example.auth.entity.User;
 import com.example.auth.entity.VerificationToken;
 import com.example.auth.exception.AppExceptions.*;
 import com.example.auth.repository.RefreshTokenRepository;
+import com.example.auth.repository.PasswordResetTokenRepository;
 import com.example.auth.repository.UserRepository;
 import com.example.auth.repository.VerificationTokenRepository;
 import com.example.auth.security.JwtService;
@@ -32,6 +34,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final VerificationTokenRepository verificationTokenRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
@@ -44,6 +47,7 @@ public class AuthServiceImpl implements AuthService {
             UserRepository userRepository,
             VerificationTokenRepository verificationTokenRepository,
             RefreshTokenRepository refreshTokenRepository,
+            PasswordResetTokenRepository passwordResetTokenRepository,
             PasswordEncoder passwordEncoder,
             AuthenticationManager authenticationManager,
             JwtService jwtService,
@@ -51,6 +55,7 @@ public class AuthServiceImpl implements AuthService {
         this.userRepository = userRepository;
         this.verificationTokenRepository = verificationTokenRepository;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
@@ -71,7 +76,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 3. Email Unique Check
-        if (userRepository.existsByEmail(request.getEmail())) {
+        String normalizedEmail = normalizeEmail(request.getEmail());
+        if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
             throw new UserAlreadyExistsException("An account with this email address already exists.");
         }
 
@@ -85,7 +91,7 @@ public class AuthServiceImpl implements AuthService {
         // 5. Save User
         User user = User.builder()
                 .fullName(request.getFullName())
-                .email(request.getEmail())
+                .email(normalizedEmail)
                 .username(request.getUsername() != null && !request.getUsername().isBlank() ? request.getUsername() : null)
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role("USER")
@@ -136,7 +142,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void resendVerificationEmail(String email) {
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmailIgnoreCase(normalizeEmail(email))
                 .orElseThrow(() -> new IllegalArgumentException("No registered user found with email: " + email));
 
         if (user.isEmailVerified()) {
@@ -163,8 +169,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponseDTO login(LoginRequestDTO request) {
         // Find user first to check if they are verified
-        User user = userRepository.findByEmail(request.getEmailOrUsername())
-                .or(() -> userRepository.findByUsername(request.getEmailOrUsername()))
+        String lookup = request.getEmailOrUsername();
+        User user = userRepository.findByEmailIgnoreCase(lookup)
+                .or(() -> userRepository.findByUsernameIgnoreCase(lookup))
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid email/username or password"));
 
         if (!user.isEmailVerified()) {
@@ -258,5 +265,60 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void logout(String refreshTokenStr) {
         refreshTokenRepository.deleteByToken(refreshTokenStr);
+    }
+
+    @Override
+    public void requestPasswordReset(String email) {
+        User user = userRepository.findByEmailIgnoreCase(normalizeEmail(email))
+                .orElseThrow(() -> new IllegalArgumentException("No registered user found with email: " + email));
+
+        String otp = String.format("%06d", (int) (Math.random() * 1_000_000));
+
+        PasswordResetToken token = passwordResetTokenRepository.findByUser(user)
+                .orElseGet(PasswordResetToken::new);
+        token.setOtp(otp);
+        token.setUser(user);
+        token.setExpiryDate(LocalDateTime.now().plusMinutes(10));
+        token.setConsumed(false);
+
+        passwordResetTokenRepository.save(token);
+        emailService.sendPasswordResetOtpEmail(user.getEmail(), user.getFullName(), otp);
+    }
+
+    @Override
+    public void verifyPasswordResetOtp(String email, String otp) {
+        User user = userRepository.findByEmailIgnoreCase(normalizeEmail(email))
+                .orElseThrow(() -> new IllegalArgumentException("No registered user found with email: " + email));
+
+        PasswordResetToken token = passwordResetTokenRepository.findByUser(user)
+                .orElseThrow(() -> new TokenException("Invalid or expired OTP"));
+
+        if (token.isConsumed() || token.getExpiryDate().isBefore(LocalDateTime.now()) || !token.getOtp().equals(otp)) {
+            throw new TokenException("Invalid or expired OTP");
+        }
+    }
+
+    @Override
+    public void resetPassword(String email, String otp, String newPassword) {
+        verifyPasswordResetOtp(email, otp);
+
+        User user = userRepository.findByEmailIgnoreCase(normalizeEmail(email))
+                .orElseThrow(() -> new IllegalArgumentException("No registered user found with email: " + email));
+
+        if (!PasswordValidator.isValid(newPassword)) {
+            throw new IllegalArgumentException("Password is not strong enough. It must contain at least 8 characters, including uppercase, lowercase, numbers, and special characters.");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        passwordResetTokenRepository.findByUser(user).ifPresent(token -> {
+            token.setConsumed(true);
+            passwordResetTokenRepository.save(token);
+        });
+    }
+
+    private String normalizeEmail(String email) {
+        return email == null ? null : email.trim().toLowerCase();
     }
 }

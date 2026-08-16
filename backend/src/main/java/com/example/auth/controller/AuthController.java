@@ -126,6 +126,24 @@ public class AuthController {
         return ResponseEntity.ok(new MessageResponseDTO("Logout successful."));
     }
 
+    @PostMapping("/forgot-password")
+    public ResponseEntity<MessageResponseDTO> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDTO request) {
+        authService.requestPasswordReset(request.getEmail());
+        return ResponseEntity.ok(new MessageResponseDTO("OTP sent to registered email address."));
+    }
+
+    @PostMapping("/verify-reset-otp")
+    public ResponseEntity<MessageResponseDTO> verifyResetOtp(@Valid @RequestBody VerifyResetOtpRequestDTO request) {
+        authService.verifyPasswordResetOtp(request.getEmail(), request.getOtp());
+        return ResponseEntity.ok(new MessageResponseDTO("OTP verified successfully."));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<MessageResponseDTO> resetPassword(@Valid @RequestBody ResetPasswordRequestDTO request) {
+        authService.resetPassword(request.getEmail(), request.getOtp(), request.getNewPassword());
+        return ResponseEntity.ok(new MessageResponseDTO("Password reset successful."));
+    }
+
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {

@@ -23,6 +23,19 @@ export const setAccessToken = (token) => {
   }
 };
 
+export const forgotPassword = (email) => api.post('/api/auth/forgot-password', { email });
+export const verifyResetOtp = (email, otp) => api.post('/api/auth/verify-reset-otp', { email, otp });
+export const resetPassword = (email, otp, newPassword) =>
+  api.post('/api/auth/reset-password', { email, otp, newPassword });
+
+export const listVaultEntries = () => api.get('/api/vault');
+export const listSharedVaultEntries = () => api.get('/api/vault/shared');
+export const createVaultEntry = (payload) => api.post('/api/vault', payload);
+export const updateVaultEntry = (id, payload) => api.put(`/api/vault/${id}`, payload);
+export const deleteVaultEntry = (id) => api.delete(`/api/vault/${id}`);
+export const shareVaultEntry = (payload) => api.post('/api/vault/share', payload);
+export const revokeVaultShare = (shareId) => api.delete(`/api/vault/share/${shareId}`);
+
 // Response interceptor to handle silent token refreshing automatically
 api.interceptors.response.use(
   (response) => response,

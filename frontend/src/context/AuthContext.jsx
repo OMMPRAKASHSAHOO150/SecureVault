@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
-import api, { setAccessToken } from '../api/authApi';
+import api, { setAccessToken, forgotPassword, verifyResetOtp, resetPassword } from '../api/authApi';
 
 const AuthContext = createContext(null);
 
@@ -87,6 +87,36 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const requestPasswordReset = async (email) => {
+    try {
+      const res = await forgotPassword(email);
+      return res.data;
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to request password reset.';
+      throw new Error(message);
+    }
+  };
+
+  const confirmResetOtp = async (email, otp) => {
+    try {
+      const res = await verifyResetOtp(email, otp);
+      return res.data;
+    } catch (err) {
+      const message = err.response?.data?.message || 'OTP verification failed.';
+      throw new Error(message);
+    }
+  };
+
+  const submitNewPassword = async (email, otp, newPassword) => {
+    try {
+      const res = await resetPassword(email, otp, newPassword);
+      return res.data;
+    } catch (err) {
+      const message = err.response?.data?.message || 'Password reset failed.';
+      throw new Error(message);
+    }
+  };
+
   const logout = async () => {
     try {
       await api.post('/api/auth/logout', {});
@@ -108,6 +138,9 @@ export const AuthProvider = ({ children }) => {
         register,
         verifyEmail,
         resendVerification,
+        requestPasswordReset,
+        confirmResetOtp,
+        submitNewPassword,
         logout,
       }}
     >

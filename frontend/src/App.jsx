@@ -5,6 +5,7 @@ import Register from './pages/Register';
 import Login from './pages/Login';
 import VerifyPending from './pages/VerifyPending';
 import VerifyEmail from './pages/VerifyEmail';
+import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/verify-pending" element={<VerifyPending />} />
           <Route path="/verify" element={<VerifyEmail />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/dashboard" element={<Dashboard />} />
           
           {/* Default redirect to dashboard */}
