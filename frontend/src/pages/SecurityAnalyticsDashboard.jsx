@@ -15,8 +15,15 @@ const SecurityAnalyticsDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [now, setNow] = useState(new Date());
     const navigate = useNavigate();
     const { user, loading: authLoading, logout } = useAuth();
+
+    // Live clock timer updating every 1s
+    useEffect(() => {
+        const timer = setInterval(() => setNow(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     // Auth guard: redirect to login if not authenticated
     useEffect(() => {
@@ -38,6 +45,10 @@ const SecurityAnalyticsDashboard = () => {
         };
 
         fetchAnalytics();
+        const pollInterval = setInterval(() => {
+            fetchAnalytics();
+        }, 3000);
+        return () => clearInterval(pollInterval);
     }, [user]);
 
     const alertsSeverityData = useMemo(() => {
@@ -66,11 +77,19 @@ const SecurityAnalyticsDashboard = () => {
             } else {
                 icon = <FileText className="w-4 h-4 text-blue-400 shrink-0" />;
             }
-            const time = log.timestamp ? new Date(log.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '';
+            const logTime = log.timestamp || log.createdAt;
+            const date = logTime ? new Date(logTime) : null;
+            let timeStr = date ? date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' }) : '';
+            if (date) {
+                const diffSec = Math.floor((now - date) / 1000);
+                if (diffSec < 5) timeStr += ' (just now)';
+                else if (diffSec < 60) timeStr += ` (${diffSec}s ago)`;
+                else if (diffSec < 3600) timeStr += ` (${Math.floor(diffSec / 60)}m ago)`;
+            }
             const text = action.replaceAll('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-            return { icon, text, time, id: log.id, details: log.details || 'System activity logged' };
+            return { icon, text, time: timeStr, id: log.id, details: log.details || 'System activity logged' };
         });
-    }, [analytics]);
+    }, [analytics, now]);
 
     const handleLogout = async () => {
         await logout();
@@ -134,10 +153,13 @@ const SecurityAnalyticsDashboard = () => {
                 {/* Dashboard Header */}
                 <div className="px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row sm:items-end justify-between gap-4 shrink-0 border-b border-[#1E293B]/40 lg:border-none">
                     <div>
-                        <div className="flex items-center gap-2.5 mb-1">
+                        <div className="flex items-center gap-2.5 mb-1 flex-wrap">
                             <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">SecureVault</h1>
                             <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">
                                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> LIVE MONITORED
+                            </span>
+                            <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-blue-950/80 text-blue-300 border border-blue-800/60">
+                                {now.toLocaleTimeString()}
                             </span>
                         </div>
                         <p className="text-xs sm:text-sm text-gray-400">Real-time endpoint security monitoring and access control</p>

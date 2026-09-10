@@ -267,6 +267,10 @@ body {
   outline: none;
 }
 
+.input-with-icon-left {
+  padding-left: 2.75rem !important;
+}
+
 select.form-control {
   background-color: #12121e;
   color: #f3f4f6;

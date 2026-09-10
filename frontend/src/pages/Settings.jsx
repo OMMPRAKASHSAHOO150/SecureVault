@@ -81,7 +81,7 @@ const Settings = () => {
                                     Full Name
                                 </label>
                                 <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500 z-10">
                                         <User size={18} />
                                     </div>
                                     <input
@@ -89,7 +89,8 @@ const Settings = () => {
                                         value={fullName}
                                         onChange={(e) => setFullName(e.target.value)}
                                         required
-                                        className="w-full pl-10 pr-4 py-2.5 bg-[#0F172A] border border-[#1E293B] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+                                        className="w-full input-with-icon-left pr-4 py-2.5 bg-[#0F172A] border border-[#1E293B] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+                                        style={{ paddingLeft: '2.75rem' }}
                                         placeholder="Enter your full name"
                                     />
                                 </div>
@@ -100,14 +101,15 @@ const Settings = () => {
                                     Email Address (Read-only)
                                 </label>
                                 <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500 z-10">
                                         <Mail size={18} />
                                     </div>
                                     <input
                                         type="email"
                                         value={user?.email || ''}
                                         disabled
-                                        className="w-full pl-10 pr-4 py-2.5 bg-[#0F172A]/50 border border-[#1E293B] rounded-lg text-gray-500 cursor-not-allowed"
+                                        className="w-full input-with-icon-left pr-4 py-2.5 bg-[#0F172A]/50 border border-[#1E293B] rounded-lg text-gray-500 cursor-not-allowed"
+                                        style={{ paddingLeft: '2.75rem' }}
                                     />
                                 </div>
                             </div>
@@ -117,14 +119,15 @@ const Settings = () => {
                                     Account Role (Read-only)
                                 </label>
                                 <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500 z-10">
                                         <Shield size={18} />
                                     </div>
                                     <input
                                         type="text"
                                         value={user?.role || 'USER'}
                                         disabled
-                                        className="w-full pl-10 pr-4 py-2.5 bg-[#0F172A]/50 border border-[#1E293B] rounded-lg text-gray-500 cursor-not-allowed uppercase font-mono text-xs"
+                                        className="w-full input-with-icon-left pr-4 py-2.5 bg-[#0F172A]/50 border border-[#1E293B] rounded-lg text-gray-500 cursor-not-allowed uppercase font-mono text-xs"
+                                        style={{ paddingLeft: '2.75rem' }}
                                     />
                                 </div>
                             </div>
