@@ -16,4 +16,5 @@ public interface SharedPasswordEntryRepository extends JpaRepository<SharedPassw
     List<SharedPasswordEntry> findAllByOwnerUserAndPasswordEntry(User ownerUser, PasswordEntry passwordEntry);
     Optional<SharedPasswordEntry> findByPasswordEntryAndRecipientUser(PasswordEntry passwordEntry, User recipientUser);
     Optional<SharedPasswordEntry> findByPasswordEntryAndRecipientEmail(PasswordEntry passwordEntry, String recipientEmail);
+    long deleteByPasswordEntry(PasswordEntry passwordEntry);
 }

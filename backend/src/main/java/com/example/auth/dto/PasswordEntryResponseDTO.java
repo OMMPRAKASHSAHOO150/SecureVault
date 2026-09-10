@@ -9,11 +9,13 @@ import java.time.LocalDateTime;
 @Builder
 public class PasswordEntryResponseDTO {
     private Long id;
+    private Long shareId;
     private String title;
     private String loginName;
     private String websiteUrl;
     private String password;
     private String notes;
+    private String permission;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

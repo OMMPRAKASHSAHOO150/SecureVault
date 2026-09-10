@@ -38,6 +38,10 @@ public class User {
     @Column(nullable = false)
     private String status; // PENDING, ACTIVE, BLOCKED
 
+    @Column(name = "failed_login_attempts", nullable = false)
+    @Builder.Default
+    private int failedLoginAttempts = 0;
+
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified;
 

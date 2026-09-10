@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
 const api = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -30,11 +32,20 @@ export const resetPassword = (email, otp, newPassword) =>
 
 export const listVaultEntries = () => api.get('/api/vault');
 export const listSharedVaultEntries = () => api.get('/api/vault/shared');
+export const getLoginActivity = () => api.get('/api/auth/login-activity');
+export const getSecurityOverview = () => api.get('/api/auth/security-overview');
 export const createVaultEntry = (payload) => api.post('/api/vault', payload);
 export const updateVaultEntry = (id, payload) => api.put(`/api/vault/${id}`, payload);
 export const deleteVaultEntry = (id) => api.delete(`/api/vault/${id}`);
 export const shareVaultEntry = (payload) => api.post('/api/vault/share', payload);
 export const revokeVaultShare = (shareId) => api.delete(`/api/vault/share/${shareId}`);
+export const getPasswordHealthReport = () => api.get('/api/reports/password-health');
+export const getLoginActivityReport = () => api.get('/api/reports/login-activity');
+export const updateProfile = (data) => api.put('/api/profile', data);
+export const getAllUsers = () => api.get('/api/admin/users');
+export const updateUserStatus = (id, status) => api.put(`/api/admin/users/${id}/status?status=${status}`);
+export const updateUserRole = (id, role) => api.put(`/api/admin/users/${id}/role?role=${role}`);
+export const deleteUser = (id) => api.delete(`/api/admin/users/${id}`);
 
 // Response interceptor to handle silent token refreshing automatically
 api.interceptors.response.use(
@@ -56,7 +67,7 @@ api.interceptors.response.use(
 
       try {
         // Call the refresh token endpoint. The browser sends the secure refresh cookie automatically.
-        const res = await axios.post('http://localhost:8080/api/auth/refresh-token', {}, {
+        const res = await axios.post(`${API_BASE_URL}/api/auth/refresh-token`, {}, {
           withCredentials: true,
         });
 

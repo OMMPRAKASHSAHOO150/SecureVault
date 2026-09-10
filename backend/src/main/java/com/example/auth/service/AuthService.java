@@ -7,6 +7,8 @@ public interface AuthService {
     void verifyEmail(String token);
     void resendVerificationEmail(String email);
     AuthResponseDTO login(LoginRequestDTO request);
+    LoginActivityResponseDTO getLoginActivity();
+    SecurityOverviewResponseDTO getSecurityOverview();
     AuthResponseDTO refreshToken(String refreshToken);
     void logout(String refreshToken);
     void requestPasswordReset(String email);

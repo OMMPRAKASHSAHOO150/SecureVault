@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import 'tailwindcss';
+
 
 :root {
   --bg-primary: #0a0a0f;
@@ -9,13 +10,13 @@
   --text-primary: #f3f4f6;
   --text-secondary: #9ca3af;
   --text-muted: #6b7280;
-  
+
   /* Accent Colors */
   --accent-blue: #3b82f6;
   --accent-cyan: #06b6d4;
   --accent-purple: #8b5cf6;
   --accent-pink: #ec4899;
-  
+
   /* Status Colors */
   --color-success: #10b981;
   --color-warning: #f59e0b;
@@ -37,7 +38,7 @@ body {
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
-  background-image: 
+  background-image:
     radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 40%),
     radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.08) 0%, transparent 40%);
   background-attachment: fixed;
@@ -166,13 +167,16 @@ body {
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: var(--bg-primary);
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--bg-tertiary);
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
@@ -261,6 +265,23 @@ body {
   font-size: 0.95rem;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
+}
+
+select.form-control {
+  background-color: #12121e;
+  color: #f3f4f6;
+  color-scheme: dark;
+  cursor: pointer;
+}
+
+select.form-control option {
+  background-color: #12121e;
+  color: #f3f4f6;
+}
+
+select.form-control option:checked {
+  background-color: #2563eb;
+  color: #ffffff;
 }
 
 .form-control:focus {
@@ -604,9 +625,17 @@ body {
   transition: background-color 0.3s ease;
 }
 
-.strength-bar.filled-weak { background-color: var(--color-danger); }
-.strength-bar.filled-medium { background-color: var(--color-warning); }
-.strength-bar.filled-strong { background-color: var(--color-success); }
+.strength-bar.filled-weak {
+  background-color: var(--color-danger);
+}
+
+.strength-bar.filled-medium {
+  background-color: var(--color-warning);
+}
+
+.strength-bar.filled-strong {
+  background-color: var(--color-success);
+}
 
 /* Toggle Username/Email Login mode button */
 .toggle-login-method {
@@ -727,51 +756,150 @@ body {
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Responsive adjustments */
+@media (max-width: 1024px) {
+  .dashboard-wrapper {
+    margin: 1.5rem auto;
+    padding: 0 1rem;
+  }
+
+  .dashboard-card {
+    padding: 1.75rem 1.25rem;
+    border-radius: 16px;
+  }
+
+  .vault-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-wrapper {
+    margin: 1rem auto;
+    padding: 0 0.75rem;
+  }
+
+  .dashboard-card {
+    padding: 1.25rem 1.0rem;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .dashboard-header > div:last-child {
+    width: 100%;
+  }
+
+  .dashboard-metrics {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .password-row {
+    flex-direction: column;
+  }
+
+  .password-row-actions {
+    width: 100%;
+  }
+
+  .password-generate-btn {
+    flex: 1;
+  }
+}
+
 @media (max-width: 480px) {
   .auth-card {
-    padding: 1.75rem;
+    padding: 1.5rem 1rem;
   }
+
   .auth-title {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
   }
+
+  .dashboard-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .section-header,
   .dashboard-header,
   .vault-item-head {
     flex-direction: column;
   }
+
   .vault-count {
     align-self: flex-start;
   }
+
   .vault-actions {
     flex-direction: column;
   }
+
   .password-row {
     flex-direction: column;
   }
+
   .password-row-actions {
     width: 100%;
   }
+
   .password-generate-btn {
     width: 100%;
   }
+
   .vault-grid {
     grid-template-columns: 1fr;
   }
-  .dashboard-metrics {
-    grid-template-columns: 1fr;
-  }
+}
+
+/* Custom Scrollbar for Dashboard Panels */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #334155;
+  border-radius: 20px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #475569;
 }

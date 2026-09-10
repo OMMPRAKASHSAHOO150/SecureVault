@@ -163,4 +163,14 @@ public class AuthController {
 
         return ResponseEntity.ok(summary);
     }
+
+    @GetMapping("/login-activity")
+    public ResponseEntity<LoginActivityResponseDTO> getLoginActivity() {
+        return ResponseEntity.ok(authService.getLoginActivity());
+    }
+
+    @GetMapping("/security-overview")
+    public ResponseEntity<SecurityOverviewResponseDTO> getSecurityOverview() {
+        return ResponseEntity.ok(authService.getSecurityOverview());
+    }
 }

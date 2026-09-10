@@ -70,7 +70,7 @@ public class PasswordVaultServiceImpl implements PasswordVaultService {
         List<SharedPasswordEntry> byEmail = sharedPasswordEntryRepository.findAllByRecipientEmailOrderByUpdatedAtDesc(normalizeEmail(user.getEmail()));
         return java.util.stream.Stream.concat(byUser.stream(), byEmail.stream())
                 .distinct()
-                .map(shared -> toResponse(shared.getPasswordEntry()))
+                .map(this::toSharedResponse)
                 .toList();
     }
 
@@ -105,6 +105,7 @@ public class PasswordVaultServiceImpl implements PasswordVaultService {
         if (!canManageFull(entry)) {
             throw new IllegalArgumentException("You do not have permission to delete this credential");
         }
+        sharedPasswordEntryRepository.deleteByPasswordEntry(entry);
         passwordEntryRepository.delete(entry);
     }
 
@@ -205,13 +206,31 @@ public class PasswordVaultServiceImpl implements PasswordVaultService {
     private PasswordEntryResponseDTO toResponse(PasswordEntry entry) {
         return PasswordEntryResponseDTO.builder()
                 .id(entry.getId())
+                .shareId(null)
                 .title(entry.getTitle())
                 .loginName(entry.getLoginName())
                 .websiteUrl(entry.getWebsiteUrl())
                 .password(decrypt(entry.getEncryptedPassword()))
                 .notes(entry.getNotes())
+                .permission(null)
                 .createdAt(entry.getCreatedAt())
                 .updatedAt(entry.getUpdatedAt())
+                .build();
+    }
+
+    private PasswordEntryResponseDTO toSharedResponse(SharedPasswordEntry share) {
+        PasswordEntry entry = share.getPasswordEntry();
+        return PasswordEntryResponseDTO.builder()
+                .id(entry.getId())
+                .shareId(share.getId())
+                .title(entry.getTitle())
+                .loginName(entry.getLoginName())
+                .websiteUrl(entry.getWebsiteUrl())
+                .password(decrypt(entry.getEncryptedPassword()))
+                .notes(entry.getNotes())
+                .permission(share.getPermission())
+                .createdAt(share.getCreatedAt())
+                .updatedAt(share.getUpdatedAt())
                 .build();
     }
 
@@ -231,7 +250,7 @@ public class PasswordVaultServiceImpl implements PasswordVaultService {
         }
     }
 
-    private String decrypt(String encoded) {
+    public String decrypt(String encoded) {
         try {
             byte[] allBytes = Base64.getDecoder().decode(encoded);
             ByteBuffer buffer = ByteBuffer.wrap(allBytes);
