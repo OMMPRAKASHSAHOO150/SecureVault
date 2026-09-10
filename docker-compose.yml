@@ -35,7 +35,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: securevaultpassword
       JWT_SECRET: dGhpcy1pcy1hLXNlY3VyZS1hbmQtc3Ryb25nLXNlY3JldC1rZXktZm9yLWp3dC1hdXRoLW1vZHVsZS1wYXNzd29yZC12YXVsdA==
-      APP_MAIL_MODE: smtp
+      APP_MAIL_MODE: dev
       FRONTEND_URL: http://localhost
 
   # 3. React Frontend Service (Nginx)

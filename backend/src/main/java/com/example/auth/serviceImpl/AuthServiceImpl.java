@@ -55,6 +55,9 @@ public class AuthServiceImpl implements AuthService {
         @Value("${app.jwt.refresh-expiration-ms}")
         private long refreshExpirationMs;
 
+        @Value("${app.mail.mode:dev}")
+        private String mailMode;
+
         public AuthServiceImpl(
                         UserRepository userRepository,
                         VerificationTokenRepository verificationTokenRepository,
@@ -109,6 +112,8 @@ public class AuthServiceImpl implements AuthService {
                         }
                 }
 
+                boolean isDevMode = "dev".equalsIgnoreCase(mailMode);
+
                 // 5. Save User
                 User user = User.builder()
                                 .fullName(request.getFullName())
@@ -118,8 +123,8 @@ public class AuthServiceImpl implements AuthService {
                                                 : null)
                                 .password(passwordEncoder.encode(request.getPassword()))
                                 .role("USER")
-                                .status("PENDING")
-                                .emailVerified(false)
+                                .status(isDevMode ? "ACTIVE" : "PENDING")
+                                .emailVerified(isDevMode)
                                 .build();
 
                 User savedUser = userRepository.save(user);
@@ -134,14 +139,26 @@ public class AuthServiceImpl implements AuthService {
 
                 verificationTokenRepository.save(verificationToken);
 
-                // 7. Send Verification Email
-                emailService.sendVerificationEmail(savedUser.getEmail(), savedUser.getFullName(), token);
+                // 7. Send Verification Email (Catch exceptions so mail failures don't block registration)
+                try {
+                        emailService.sendVerificationEmail(savedUser.getEmail(), savedUser.getFullName(), token);
+                } catch (Exception e) {
+                        org.slf4j.LoggerFactory.getLogger(AuthServiceImpl.class)
+                                        .warn("Could not send verification email during registration: {}", e.getMessage());
+                        // If sending email fails, auto-activate user so registration & login succeed
+                        savedUser.setEmailVerified(true);
+                        savedUser.setStatus("ACTIVE");
+                        userRepository.save(savedUser);
+                }
 
+                boolean isVerifiedNow = savedUser.isEmailVerified();
                 return RegisterResponseDTO.builder()
-                                .message("Registration Successful. Please verify your email.")
+                                .message(isVerifiedNow 
+                                                ? "Registration Successful! You can now log in." 
+                                                : "Registration Successful. Please verify your email.")
                                 .userId(savedUser.getId())
                                 .email(savedUser.getEmail())
-                                .emailVerified(false)
+                                .emailVerified(isVerifiedNow)
                                 .build();
         }
 
